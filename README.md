@@ -20,14 +20,40 @@ Tujuan project ini adalah membangun layanan autentikasi terpusat menggunakan Act
 - VMware Workstation
 
 
-## IP Addressing 
+### IP Addressing 
 - Fortigate     Internet  192.168.5.147
                 LAN       10.200.200.1
 - Debian                  10.200.200.10
 - Windows-10              10.200.200.100  
 
-## Active Directory Information
+### Active Directory Information
 - Domain        sarmila.local
 - Realm         SARMILA.LOCAL
 - DNS Backend   SAMBA_INTERNAL
 - Administrator Administrator
+
+### Featured Implemented
+
+#### Fortigate
+- Interface Configuration
+- Firewall Policy
+- NAT
+- Static Routing
+- Internet Access
+
+#### Debian 13
+- Static IP Configuration
+- Samba Instalation
+
+#### Samba Active Directory
+- Domain Controller
+- Internal DNS
+- LDAP Authentication
+- Kerberos Authentication
+- User Management
+- Group Management
+
+#### Windows 10
+- Domain Join
+- Domain Login
+- DNS Resolution
