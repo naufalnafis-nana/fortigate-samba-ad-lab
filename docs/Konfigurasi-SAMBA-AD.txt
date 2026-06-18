@@ -1,0 +1,117 @@
+Konfigurasi Ip address
+nano /etc/network/interfaces
+	auto ens33
+	iface ens33 inet static
+	address 10.200.200.10
+	netmask 255.255.255.0
+	gateway 10.200.200.1
+	dns-nameservers 8.8.8.8
+
+ifup ens33
+ip address (pastikan ip yang sudah kita konfigurasi muncul)
+
+
+Konfigurasi DNS Server
+nano /etc/resolv.conf
+silahkan isi perintah seperti dibawah ini 
+	nameserver 10.200.200.10
+	nameserver 127.0.0.1
+	search sarmila.local
+
+systemctl restart network
+
+
+Konfigurasi Repository 
+nano /etc/apt/sources.list
+silahkan isi repository dibawah ini 
+deb http://deb.debian.org/debian trixie main contrib non-free non-free-firmware
+deb http://security.debian.org/debian-security trixie-security main contrib non-free non-free-firmware
+deb http://deb.debian.org/debian trixie-updates main contrib non-free non-free-firmware
+
+lakukan update & Upgrade Debian server
+apt update
+apt upgrade
+
+nano /etc/hostname
+	server
+
+reboot
+
+
+setelah selesai setting coba login ulang
+
+Install Samba AD
+apt install samba krb5-user winbind smbclient dnsutils -y
+
+pastikan tidak ada konfigurasi apapun
+contoh : DNS server, LDAP server, samba versi lama
+jika ada segera disable terlebih dahulu semua dikhawatirkan akan bentrok port dan layanan
+
+Stop service samba versi lama
+systemctl stop smbd nmbd winbind
+systemctl disable smbd nmbd winbind
+
+Backup dulu smb.conf 
+mv /etc/samba/smb.conf /etc/samba/smb.conf.bak
+
+Inspeksi port yang berjalan (port 389 SLAPD & port 53 DNS )
+
+inspeksi port 389
+ss -tulpn | grep :389
+pastikan tidak ada tulisan listen ON . . . . .
+jika ada segera matikan dulu
+
+cek status service yang berjalan
+systemctl status slapd
+	jika jawaban Active : Running (segera matikan)
+systemctl stop slapd
+systemctl disable slapd
+
+inspeksi DNS port 53
+ss -tulpn | grep :53
+	jika muncul pesan system-resolved (segera matikan service DNS)
+systemctl stop systemd-resolved
+systemctl disable systemd-resolved
+
+
+jika semua dirasa aman lakukan provision domain 
+samba-tool domain provision \
+--use-rfc2307 \
+--interactive
+
+isi provision sebagai berikut: 
+Realm : SARMILA.LOCAL
+
+Domain : SARMILA
+
+Server Role : dc
+
+DNS Backend : SAMBA_INTERNAL
+
+Administrator Password :2026--Samba!
+
+salin data karberos
+cp /var/lib/samba/private/krb5.conf /etc/krb5.conf
+
+buka semua service samba AD
+systemctl unmask samba-ad-dc
+systemctl enable samba-ad-dc
+systemctl start samba-ad-dc
+
+cek status service samba AD
+systemctl status samba-ad-dc
+	pastikan sudah active (running)
+	jika belum troubleshoot (DNS Port, SLAPD, hostname, hosts)
+
+
+verifikasi Kerberos
+kinit administrator
+klist
+	harus muncul tulisan (krbgt/sarmila.local)
+
+
+mulai buat user
+	samba-tool user create anisa.rahma
+	samba-tool user create anisa.rahma Password@123
+
+Dilanjutkan ke Windows 10 untuk join domain, cek DNS , login user
